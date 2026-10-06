@@ -286,7 +286,7 @@ class OperationFactory:
         cls._operations[name.lower()] = operation_class
 
     @classmethod
-    def create_operation(cls, operation_type: str) -> Operation:
+    def create_operation(cls, operation_type: str) -> Operations:
         """
         Create an operation instance based on the operation type.
 
