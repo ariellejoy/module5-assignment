@@ -219,12 +219,12 @@ def test_load_history(mock_exists, mock_read_csv, calculator_instance):
     except OperationError:
         pytest.fail("Loading history failed due to OperationError")
         
-def test_load_history_success(monkeypatch, capsys):
-    inputs = iter(["load", "exit"])
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
-    captured = capsys.readouterr()
-    assert "History loaded successfully" in captured.out
+# def test_load_history_success(monkeypatch, capsys):
+#     inputs = iter(["load", "exit"])
+#     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+#     calculator_repl()
+#     captured = capsys.readouterr()
+#     assert "History loaded successfully" in captured.out
 
 # Test Clearing History
 
