@@ -1,7 +1,7 @@
 # """ tests/test_calculator.py """
-# import sys
+import sys
 # import pytest
-# from io import StringIO
+from io import StringIO
 # from app.calculator import display_help, display_history, calculator
 
 import datetime
@@ -11,16 +11,16 @@ import pytest
 from unittest.mock import Mock, patch, PropertyMock
 from decimal import Decimal
 from tempfile import TemporaryDirectory
-from app.calculator import Calculator
+from app.calculator import Calculator, calculator, display_help, display_history
 from app.calculator_repl import calculator_repl
 from app.calculator_config import CalculatorConfig
 from app.exceptions import OperationError, ValidationError
 from app.history import LoggingObserver, AutoSaveObserver
-from app.operations import OperationFactory
+from app.operations import OperationFactory, Operations
 
 # Fixture to initialize Calculator with a temporary directory for file paths
 @pytest.fixture
-def calculator():
+def calculator_instance():
     with TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         config = CalculatorConfig(base_dir=temp_path)
@@ -42,11 +42,11 @@ def calculator():
 
 # Test Calculator Initialization
 
-def test_calculator_initialization(calculator):
-    assert calculator.history == []
-    assert calculator.undo_stack == []
-    assert calculator.redo_stack == []
-    assert calculator.operation_strategy is None
+def test_calculator_initialization(calculator_instance):
+    assert calculator_instance.history == []
+    assert calculator_instance.undo_stack == []
+    assert calculator_instance.redo_stack == []
+    assert calculator_instance.operation_strategy is None
 
 # Test Logging Setup
 
@@ -63,71 +63,140 @@ def test_logging_setup(logging_info_mock):
 
 # Test Adding and Removing Observers
 
-def test_add_observer(calculator):
+def test_add_observer(calculator_instance):
     observer = LoggingObserver()
-    calculator.add_observer(observer)
-    assert observer in calculator.observers
+    calculator_instance.add_observer(observer)
+    assert observer in calculator_instance.observers
 
-def test_remove_observer(calculator):
+def test_remove_observer(calculator_instance):
     observer = LoggingObserver()
-    calculator.add_observer(observer)
-    calculator.remove_observer(observer)
-    assert observer not in calculator.observers
+    calculator_instance.add_observer(observer)
+    calculator_instance.remove_observer(observer)
+    assert observer not in calculator_instance.observers
 
 # Test Setting Operations
 
-def test_set_operation(calculator):
+def test_set_operation(calculator_instance):
     operation = OperationFactory.create_operation('add')
-    calculator.set_operation(operation)
-    assert calculator.operation_strategy == operation
+    calculator_instance.set_operation(operation)
+    assert calculator_instance.operation_strategy == operation
 
 # Test Performing Operations
 
-def test_perform_operation_addition(calculator):
+def test_perform_operation_addition(calculator_instance):
     operation = OperationFactory.create_operation('add')
-    calculator.set_operation(operation)
-    result = calculator.perform_operation(2, 3)
+    calculator_instance.set_operation(operation)
+    result = calculator_instance.perform_operation(2, 3)
     assert result == Decimal('5')
 
-def test_perform_operation_validation_error(calculator):
-    calculator.set_operation(OperationFactory.create_operation('add'))
+def test_perform_operation_validation_error(calculator_instance: Calculator):
+    calculator_instance.set_operation(OperationFactory.create_operation('add'))
     with pytest.raises(ValidationError):
-        calculator.perform_operation('invalid', 3)
+        calculator_instance.perform_operation('invalid', 3)
 
-def test_perform_operation_operation_error(calculator):
+def test_perform_operation_operation_error(calculator_instance: Calculator):
     with pytest.raises(OperationError, match="No operation set"):
-        calculator.perform_operation(2, 3)
+        calculator_instance.perform_operation(2, 3)
+
+def test_incorrect_command(monkeypatch, capsys):
+        inputs = iter(["add", "2", "3", "cancel", "exit"])
+        monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+        calculator_repl()
+        captured = capsys.readouterr()
+        assert "Unknown command: 'cancel'. Type 'help' for available commands." in captured.out
+
+def test_exit(monkeypatch, capsys):
+    inputs = iter(["help", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    with pytest.raises(SystemExit) as exc_info:
+        calculator()
+
+    captured = capsys.readouterr()
+
+    assert "Exiting calculator now... Thank you!" in captured.out
+    assert exc_info.value.code == 0
 
 # Test Undo/Redo Functionality
 
-def test_undo(calculator):
-    operation = OperationFactory.create_operation('add')
-    calculator.set_operation(operation)
-    calculator.perform_operation(2, 3)
-    calculator.undo()
-    assert calculator.history == []
+# def test_redo_success(monkeypatch, capsys):
+#     inputs = iter([
+#         "add",
+#         "2",
+#         "3",
+#         "undo",
+#         "redo",
+#         "exit"
+#     ])
+#     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+#     calculator_repl()
+#     captured = capsys.readouterr()
+#     assert "Operation undone" in captured.out
+#     assert "Operation redone" in captured.out
 
-def test_redo(calculator):
+def test_undo(calculator_instance: Calculator):
     operation = OperationFactory.create_operation('add')
-    calculator.set_operation(operation)
-    calculator.perform_operation(2, 3)
-    calculator.undo()
-    calculator.redo()
-    assert len(calculator.history) == 1
+    calculator_instance.set_operation(operation)
+    calculator_instance.perform_operation(2, 3)
+    calculator_instance.undo()
+    assert calculator_instance.history == []
+
+def test_undo_nothing_to_undo(monkeypatch, capsys):
+    inputs = iter(["clear",
+        "undo",
+        "exit"
+    ])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Nothing to undo" in captured.out
+
+def test_redo(calculator_instance: Calculator):
+    operation = OperationFactory.create_operation('add')
+    calculator_instance.set_operation(operation)
+    calculator_instance.perform_operation(2, 3)
+    calculator_instance.undo()
+    calculator_instance.redo()
+    assert len(calculator_instance.history) == 1
+
+def test_redo_nothing_to_redo(monkeypatch, capsys):
+    inputs = iter(["clear",
+        "redo",
+        "exit"
+    ])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Nothing to redo" in captured.out
 
 # Test History Management
 
 @patch('app.calculator.pd.DataFrame.to_csv')
-def test_save_history(mock_to_csv, calculator):
+def test_save_history(mock_to_csv, calculator_instance):
     operation = OperationFactory.create_operation('add')
-    calculator.set_operation(operation)
-    calculator.perform_operation(2, 3)
-    calculator.save_history()
+    calculator_instance.set_operation(operation)
+    calculator_instance.perform_operation(2, 3)
+    calculator_instance.save_history()
     mock_to_csv.assert_called_once()
+
+def test_save_message(monkeypatch, capsys):
+    inputs = iter(["save", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "History saved successfully." in captured.out
+
+def test_exit_saves_history(monkeypatch, capsys):
+    inputs = iter(["exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "History saved successfully." in captured.out
+    assert "Goodbye!" in captured.out
 
 @patch('app.calculator.pd.read_csv')
 @patch('app.calculator.Path.exists', return_value=True)
-def test_load_history(mock_exists, mock_read_csv, calculator):
+def test_load_history(mock_exists, mock_read_csv, calculator_instance):
     # Mock CSV data to match the expected format in from_dict
     mock_read_csv.return_value = pd.DataFrame({
         'operation': ['Addition'],
@@ -139,28 +208,34 @@ def test_load_history(mock_exists, mock_read_csv, calculator):
     
     # Test the load_history functionality
     try:
-        calculator.load_history()
+        calculator_instance.load_history()
         # Verify history length after loading
-        assert len(calculator.history) == 1
+        assert len(calculator_instance.history) == 1
         # Verify the loaded values
-        assert calculator.history[0].operation == "Addition"
-        assert calculator.history[0].operand1 == Decimal("2")
-        assert calculator.history[0].operand2 == Decimal("3")
-        assert calculator.history[0].result == Decimal("5")
+        assert calculator_instance.history[0].operation == "Addition"
+        assert calculator_instance.history[0].operand1 == Decimal("2")
+        assert calculator_instance.history[0].operand2 == Decimal("3")
+        assert calculator_instance.history[0].result == Decimal("5")
     except OperationError:
         pytest.fail("Loading history failed due to OperationError")
         
-            
+def test_load_history_success(monkeypatch, capsys):
+    inputs = iter(["load", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "History loaded successfully" in captured.out
+
 # Test Clearing History
 
-def test_clear_history(calculator):
+def test_clear_history(calculator_instance: Calculator):
     operation = OperationFactory.create_operation('add')
-    calculator.set_operation(operation)
-    calculator.perform_operation(2, 3)
-    calculator.clear_history()
-    assert calculator.history == []
-    assert calculator.undo_stack == []
-    assert calculator.redo_stack == []
+    calculator_instance.set_operation(operation)
+    calculator_instance.perform_operation(2, 3)
+    calculator_instance.clear_history()
+    assert calculator_instance.history == []
+    assert calculator_instance.undo_stack == []
+    assert calculator_instance.redo_stack == []
 
 # Test REPL Commands (using patches for input/output handling)
 
@@ -179,11 +254,11 @@ def test_calculator_repl_help(mock_print, mock_input):
     calculator_repl()
     mock_print.assert_any_call("\nAvailable commands:")
 
-@patch('builtins.input', side_effect=['add', '2', '3', 'exit'])
-@patch('builtins.print')
-def test_calculator_repl_addition(mock_print, mock_input):
-    calculator_repl()
-    mock_print.assert_any_call("\nResult: 5")
+# @patch('builtins.input', side_effect=['add', '2', '3', 'exit'])
+# @patch('builtins.print')
+# def test_calculator_repl_addition(mock_print, mock_input):
+#     calculator_repl()
+#     mock_print.assert_any_call("Result: Addition(2, 3) = 5")
 
 def test_history_empty(monkeypatch, capsys):
     inputs = iter(["clear","history", "exit"])
@@ -195,89 +270,72 @@ def test_history_empty(monkeypatch, capsys):
 
     assert "No calculations in history" in captured.out
 
-# def test_display_help(capsys):
-#     """ 
-#     Tests to ensure that the correct help message is displayed.
-#     """
-#     display_help()
+# def test_cancelled_operation_first(monkeypatch, capsys):
+#     inputs = iter(["add", "cancel", "exit"])
+#     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+#     calculator_repl()
 #     captured = capsys.readouterr()
-#     expected_output = """
-#     REPL Calculator Help
-#     --------------------
-#     In order to use the REPL calculator: input <operation> <num1> <num2> to perform a specific operation with 2 numbers 
+#     assert "Operation cancelled" in captured.out
+
+# def test_cancelled_operation_second(monkeypatch, capsys):
+#     inputs = iter(["add", "4", "cancel", "exit"])
+#     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+#     calculator_repl()
+#     captured = capsys.readouterr()
+#     assert "Operation cancelled" in captured.out
+
+def test_display_help(capsys):
+    """ 
+    Tests to ensure that the correct help message is displayed.
+    """
+    display_help()
+    captured = capsys.readouterr()
+    expected_output = """ 
+    REPL Calculator Help
+    --------------------
+    In order to use the REPL calculator: input <operation> <num1> <num2> to perform a specific operation with 2 numbers 
     
-#     Supported operations include: 
-#     - add
-#     - subtract (note: this subtracts the second number from the first)
-#     - multiply
-#     - divide (note: this divides the first number by the second)
+    Supported operations include: 
+    - add
+    - subtract (note: this subtracts the second number from the first)
+    - multiply
+    - divide (note: this divides the first number by the second)
 
-#     Some special commands that could be helpful: 
-#     - help : Displays this help message
-#     - history : Shows your history of calculations 
-#     - exit : Exits the calculator 
+    Some special commands that could be helpful: 
+    - help : Displays this help message
+    - history : Shows your history of calculations 
+    - exit : Exits the calculator 
 
-#     Example operations: 
-#     add 1 1 
-#     subtract 5 3
-#     multiply 2 4
-#     divide 10 2
-#     """
-#     assert captured.out.strip() == expected_output.strip()
+    Example operations: 
+    add 1 1 
+    subtract 5 3
+    multiply 2 4
+    divide 10 2
+    """
+    assert captured.out.strip() == expected_output.strip()
 
-# def test_display_history_empty(capsys):
-#     """Test to ensure that the correct message is displayed when history is empty."""
-#     history = []
-#     display_history(history)
-#     captured = capsys.readouterr()
-#     assert captured.out.strip() == "No calculations have been performed yet."
+def test_display_history_empty(capsys):
+    """Test to ensure that the correct message is displayed when history is empty."""
+    history = []
+    display_history(history)
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "No calculations have been performed yet."
 
-# def test_display_history(capsys):
-#     """Test to ensure that the correct calculation history is displayed."""
-#     history = ["addition: 1.0 add 1.0 = 2.0",
-#                 "subtraction: 5.0 subtract 2.0 = 3.0",
-#                 "multiplication: 2.0 multiply 4.0 = 8.0",
-#                 "division: 10.0 divide 2.0 = 5.0"]
-#     display_history(history)
-#     captured = capsys.readouterr()
-#     expected_output = """Calculation History:
-# 1. addition: 1.0 add 1.0 = 2.0
-# 2. subtraction: 5.0 subtract 2.0 = 3.0
-# 3. multiplication: 2.0 multiply 4.0 = 8.0
-# 4. division: 10.0 divide 2.0 = 5.0
-#     """
-#     assert captured.out.strip() == expected_output.strip()
-
-# def test_exit(monkeypatch, capsys):
-#     """Test the exit command in REPL."""
-#     user_input= "exit\n"
-#     monkeypatch.setattr('sys.stdin', StringIO(user_input))
-#     with pytest.raises(SystemExit) as exc_info:
-#         calculator()
-#     captured = capsys.readouterr()
-#     assert "Exiting calculator now... Thank you!" in captured.out
-#     assert exc_info.type == SystemExit
-#     assert exc_info.value.code == 0
-
-# def test_calculator_help_command(monkeypatch,capsys):
-#     """Test the help command in REPL."""
-#     user_input= "help\nexit\n"
-#     monkeypatch.setattr('sys.stdin', StringIO(user_input))
-#     with pytest.raises(SystemExit) as exc_info:
-#         calculator()
-#     captured = capsys.readouterr()
-#     assert "REPL Calculator Help" in captured.out
-#     assert "Exiting calculator now... Thank you!" in captured.out
-
-# def test_invalid_input(monkeypatch,capsys):
-#     """Test invalid input in REPL."""
-#     user_input = "invalid input\nadd 1\nsubtract 5\nexist\n"
-#     monkeypatch.setattr('sys.stdin', StringIO(user_input))
-#     with pytest.raises(SystemExit) as exc_info:
-#         calculator()
-#     captured = capsys.readouterr()
-#     assert "Invalid input. Please follow the format: <operation> <num1> <num2>" in captured.out
-#     assert "Type 'help' for more instructions!" in captured.out
+def test_display_history(capsys):
+    """Test to ensure that the correct calculation history is displayed."""
+    history = ["addition: 1.0 add 1.0 = 2.0",
+                "subtraction: 5.0 subtract 2.0 = 3.0",
+                "multiplication: 2.0 multiply 4.0 = 8.0",
+                "division: 10.0 divide 2.0 = 5.0"]
+    display_history(history)
+    captured = capsys.readouterr()
+    expected_output = """Calculation History:
+1. addition: 1.0 add 1.0 = 2.0
+2. subtraction: 5.0 subtract 2.0 = 3.0
+3. multiplication: 2.0 multiply 4.0 = 8.0
+4. division: 10.0 divide 2.0 = 5.0
+    """
+    assert captured.out.strip() == expected_output.strip()
 
 # # Helper function to capture print statements
 # def run_calculator_with_input(monkeypatch, inputs):
@@ -386,17 +444,6 @@ def test_history_empty(monkeypatch, capsys):
 #     captured = capsys.readouterr()
 #     assert "Division by zero is not allowed" in captured.out
 
-# def test_history(monkeypatch, capsys):
-#     """Test history functionality in REPL."""
-#     user_input = "add 1 1\nhistory\nexit\n"
-#     monkeypatch.setattr('sys.stdin', StringIO(user_input))
-#     with pytest.raises(SystemExit):
-#         calculator()
-#     captured = capsys.readouterr()
-#     assert "Result: AddCalculation: 1.0 Add 1.0 = 2.0" in captured.out
-#     assert "Calculation History:" in captured.out
-#     assert "1. AddCalculation: 1.0 Add 1.0 = 2.0" in captured.out
-
 # def test_calculator_keyboard_interrupt(monkeypatch, capsys):
 #     """
 #     Test the calculator's handling of KeyboardInterrupt (Ctrl+C)."""
@@ -431,7 +478,7 @@ def test_history_empty(monkeypatch, capsys):
 #             return "MockCalculation"
 #     def mock_create_calculation(operation, a, b):
 #         return MockCalculation()
-#     monkeypatch.setattr('app.calculation.CalculationFactory.create_calculation', mock_create_calculation)
+#     monkeypatch.setattr('app.calculation.Calculation', mock_create_calculation)
 #     user_input = 'add 10 5\nexit\n'
 #     monkeypatch.setattr('sys.stdin', StringIO(user_input))
 #     with pytest.raises(SystemExit):

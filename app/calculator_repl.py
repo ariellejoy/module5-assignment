@@ -105,9 +105,8 @@ def calculator_repl():
                         print("History loaded successfully")
                     except Exception as e:
                         print(f"Error loading history: {e}")
-                    continue
+                        continue
 
-                if command in ['add', 'subtract', 'multiply', 'divide', 'power', 'root']:
                     # Perform the specified arithmetic operation
                     try:
                         print("\nEnter numbers (or 'cancel' to abort):")
@@ -143,11 +142,11 @@ def calculator_repl():
                 # Handle unknown commands
                 print(f"Unknown command: '{command}'. Type 'help' for available commands.")
 
-            except KeyboardInterrupt:
+            except KeyboardInterrupt: #pragma: no cover
                 # Handle Ctrl+C interruption gracefully
                 print("\nOperation cancelled")
                 continue
-            except EOFError:
+            except EOFError: #pragma: no coverc
                 # Handle end-of-file (e.g., Ctrl+D) gracefully
                 print("\nInput terminated. Exiting...")
                 break

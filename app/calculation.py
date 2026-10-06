@@ -336,7 +336,7 @@ class Calculation:
 # -----------------------------------------------------------------------------------
 # Factory Class: CalculationFactory
 # -----------------------------------------------------------------------------------
-#class CalculationFactory:
+# class CalculationFactory:
 #    """
 #    The CalculationFactory is a **Factory Class** responsible for creating instances 
 #    of Calculation subclasses. This design pattern allows us to encapsulate the 
@@ -348,68 +348,68 @@ class Calculation:
 #      separated from the calculations themselves.
 #    - **Open/Closed Principle (OCP)**: We can add new calculation types without changing 
 #      the existing codebase. We simply register new calculation classes, making our 
-##      code extensible and flexible to future modifications.
+# #      code extensible and flexible to future modifications.
 #   """
-#
+
 #    # _calculations is a dictionary that holds a mapping of calculation types 
-    # (like "add" or "subtract") to their respective classes.
+#     (like "add" or "subtract") to their respective classes.
 #   def register_calculation(cls, calculation_type: str):
 #        """
 #        This method is a decorator used to register a specific Calculation subclass 
 #        under a unique calculation type. Registering classes with string identifiers 
-##        like "add" or "multiply" enables easy access to different operations 
-##        dynamically at runtime.
+# #        like "add" or "multiply" enables easy access to different operations 
+# #        dynamically at runtime.
 
 #        **Parameters:**
-##        - `calculation_type (str)`: A short identifier for the type of calculation 
-##          (e.g., 'add' for addition).
+# #        - `calculation_type (str)`: A short identifier for the type of calculation 
+# #          (e.g., 'add' for addition).
         
-##        **Benefits of Using a Decorator for Registration:**
-##        - **Modularity**: By using a decorator, we can easily add new calculations by 
-##          annotating new subclasses with `@CalculationFactory.register_calculation`.
-##        - **Dynamic Binding**: This approach binds each calculation type to a class dynamically, 
-##          allowing us to extend our application without altering the core logic.
-##        """
+# #        **Benefits of Using a Decorator for Registration:**
+# #        - **Modularity**: By using a decorator, we can easily add new calculations by 
+# #          annotating new subclasses with `@CalculationFactory.register_calculation`.
+# #        - **Dynamic Binding**: This approach binds each calculation type to a class dynamically, 
+# #          allowing us to extend our application without altering the core logic.
+# #        """
 #        def decorator(subclass):
 #            # Convert calculation_type to lowercase to ensure consistency.
 #            calculation_type_lower = calculation_type.lower()
-##            # Check if the calculation type has already been registered to avoid duplication.
-##            if calculation_type_lower in cls._calculations:
-##                raise ValueError(f"Calculation type '{calculation_type}' is already registered.")
-##            # Register the subclass in the _calculations dictionary.
-##            cls._calculations[calculation_type_lower] = subclass
-##            return subclass  # Return the subclass for chaining or additional use.
-##        return decorator  # Return the decorator function.
+# #            # Check if the calculation type has already been registered to avoid duplication.
+# #            if calculation_type_lower in cls._calculations:
+# #                raise ValueError(f"Calculation type '{calculation_type}' is already registered.")
+# #            # Register the subclass in the _calculations dictionary.
+# #            cls._calculations[calculation_type_lower] = subclass
+# #            return subclass  # Return the subclass for chaining or additional use.
+# #        return decorator  # Return the decorator function.
 
 #    @classmethod
 #    def create_calculation(cls, calculation_type: str, a: float, b: float) -> Calculation:
-##        """
-##        Factory method that creates instances of Calculation subclasses based on 
-##        a specified calculation type.
+# #        """
+# #        Factory method that creates instances of Calculation subclasses based on 
+# #        a specified calculation type.
 
-##        **Parameters:**
-##        - `calculation_type (str)`: The type of calculation ('add', 'subtract', 'multiply', 'divide').
-##        - `a (float)`: The first operand.
-##        - `b (float)`: The second operand.
-##        
-##        **Returns:**
-##        - `Calculation`: An instance of the appropriate Calculation subclass.
+# #        **Parameters:**
+# #        - `calculation_type (str)`: The type of calculation ('add', 'subtract', 'multiply', 'divide').
+# #        - `a (float)`: The first operand.
+# #        - `b (float)`: The second operand.
+# #        
+# #        **Returns:**
+# #        - `Calculation`: An instance of the appropriate Calculation subclass.
 
-##        **How Does This Help?**
-##        - By centralizing object creation here, we only need to specify calculation types 
-##          as strings, making it easy to choose different calculations dynamically. 
-##        - **Error Handling**: If the specified type is not available, we provide a 
-##          clear error message listing valid options, helping prevent errors and 
-##          ensuring the user knows the supported types.
-##        """
+# #        **How Does This Help?**
+# #        - By centralizing object creation here, we only need to specify calculation types 
+# #          as strings, making it easy to choose different calculations dynamically. 
+# #        - **Error Handling**: If the specified type is not available, we provide a 
+# #          clear error message listing valid options, helping prevent errors and 
+# #          ensuring the user knows the supported types.
+# #        """
 #        calculation_type_lower = calculation_type.lower()
 #        calculation_class = cls._calculations.get(calculation_type_lower)
 #        # If the type is unsupported, raise an error with the available types.
-##        if not calculation_class:
-##            available_types = ', '.join(cls._calculations.keys())
-##            raise ValueError(f"Unsupported calculation type: '{calculation_type}'. Available types: {available_types}")
-##        # Create and return an instance of the requested calculation class with the provided operands.
-##        return calculation_class(a, b)
+# #        if not calculation_class:
+    #        available_types = ', '.join(cls._calculations.keys())
+    #        raise ValueError(f"Unsupported calculation type: '{calculation_type}'. Available types: {available_types}")
+    #    # Create and return an instance of the requested calculation class with the provided operands.
+    #     return calculation_class(a, b)
 
 # -----------------------------------------------------------------------------------
 # Concrete Calculation Classes

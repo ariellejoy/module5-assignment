@@ -2,6 +2,7 @@
 # Calculator Class      #
 ########################
 
+import traceback
 import sys
 #import readline #this will enable history and editing
 #from typing import List
@@ -481,12 +482,22 @@ def calculator():
                 sys.exit(0)
 
             try: 
-            # Now we split the input into three parts: the operation (add, subtract, etc.) and the two numbers.
+                operation_map = {
+                    "add": "Addition",
+                    "subtract": "Subtraction",
+                    "multiply": "Multiplication",
+                    "divide": "Division",
+                    "power": "Power",
+                    "root": "Root",}
+
                 operation, num1_str, num2_str = user_input.split()
+
+            # Now we split the input into three parts: the operation (add, subtract, etc.) and the two numbers.
+                operation = operation_map.get(operation.lower())
             # We have to make sure the numbers are actually numbers, so we convert them to floats.
             #num1, num2 = float(num1), float(num2)
-                num1: float = float(num1_str)
-                num2: float = float(num2_str)
+                num1 = Decimal(num1_str)
+                num2 = Decimal(num2_str)
             except ValueError:
             # If the user doesn't type something correctly, like typing letters where numbers should be, we show an error.
                 print("Invalid input. Please follow the format: <operation> <num1> <num2>")
@@ -494,7 +505,7 @@ def calculator():
                 continue  # This "continue" means: try again by going back to the top of the loop.
 
             try: 
-                calculation = CalculationFactory.create_calculation(operation, num1, num2)
+                calculation = Calculation(operation, num1, num2)
             except ValueError as ve:
                 print(ve)
                 print("Type 'help' for more instructions and the list of supported operations!")
@@ -502,11 +513,13 @@ def calculator():
 
             # Now we check what operation the user asked for and call the right function (addition, subtraction, etc.).
             try: 
-                result = calculation.execute()
+                calculation = Calculation(operation, num1, num2)
+                result = calculation.result
             except ZeroDivisionError:
                 print("Error: Division by zero is not allowed.")
                 print("Please try again!")
                 continue  # This "continue" means: try again by going back to the top of the loop.  
+            #except Exception as e:
             except Exception as e:
                 print(f"An error has occurred during calculation: {e}")
                 print("Please try again!")
@@ -517,14 +530,14 @@ def calculator():
             print(f"Result: {result_str}")
             history.append(calculation)
         
-        except KeyboardInterrupt:
+        except KeyboardInterrupt: #pragma: no cover
             # EAFP example for handling unexpected interruption
             # Instead of checking if the user pressed Ctrl+C before each input,
             # we handle the KeyboardInterrupt exception.
             print("\nKeyboard interrupt detected. Exiting calculator. Goodbye!")
             sys.exit(0)
 
-        except EOFError:
+        except EOFError: #pragma: no cover
             # EAFP example for handling EOF (Ctrl+D)
             # Similar to KeyboardInterrupt, we handle the EOFError exception.
             print("\nEOF detected. Exiting calculator. Goodbye!")
