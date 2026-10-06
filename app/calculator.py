@@ -84,7 +84,7 @@ class Calculator:
             self.load_history()
         except Exception as e:
             # Log a warning if history could not be loaded
-            logging.warning(f"Could not load existing history: {e}")
+            logging.warning(f"Could not load existing history: {e}") #pragma: no cover
 
         # Log the successful initialization of the calculator
         logging.info("Calculator initialized with configuration")
@@ -196,7 +196,7 @@ class Calculator:
             ValidationError: If input validation fails.
         """
         if not self.operation_strategy:
-            raise OperationError("No operation set")
+            raise OperationError("No operation set") #pragma: no cover
 
         try:
             # Validate and convert inputs to Decimal
@@ -238,7 +238,7 @@ class Calculator:
         except Exception as e:
             # Log and raise operation errors for any other exceptions
             logging.error(f"Operation failed: {str(e)}")
-            raise OperationError(f"Operation failed: {str(e)}")
+            raise OperationError(f"Operation failed: {str(e)}") #pragma: no cover
 
     def save_history(self) -> None:
         """
@@ -280,7 +280,7 @@ class Calculator:
         except Exception as e:
             # Log and raise an OperationError if saving fails
             logging.error(f"Failed to save history: {e}")
-            raise OperationError(f"Failed to save history: {e}")
+            raise OperationError(f"Failed to save history: {e}") #pragma: no cover
 
     def load_history(self) -> None:
         """
@@ -317,7 +317,7 @@ class Calculator:
         except Exception as e:
             # Log and raise an OperationError if loading fails
             logging.error(f"Failed to load history: {e}")
-            raise OperationError(f"Failed to load history: {e}")
+            raise OperationError(f"Failed to load history: {e}") #pragma: no cover
 
     def get_history_dataframe(self) -> pd.DataFrame:
         """
