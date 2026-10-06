@@ -34,7 +34,7 @@ class TestOperation:
 class BaseOperationTest:
     """Base test class for all operations."""
 
-    operation_class: Type[Operation]
+    operation_class: Type[Operations]
     valid_test_cases: Dict[str, Dict[str, Any]]
     invalid_test_cases: Dict[str, Dict[str, Any]]
 

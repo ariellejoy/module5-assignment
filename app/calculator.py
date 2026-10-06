@@ -159,7 +159,7 @@ class Calculator:
         for observer in self.observers:
             observer.update(calculation)
 
-    def set_operation(self, operation: Operation) -> None:
+    def set_operation(self, operation: Operations) -> None:
         """
         Set the current operation strategy.
 
