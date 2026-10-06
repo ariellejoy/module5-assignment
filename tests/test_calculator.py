@@ -185,6 +185,16 @@ def test_calculator_repl_addition(mock_print, mock_input):
     calculator_repl()
     mock_print.assert_any_call("\nResult: 5")
 
+def test_history_empty(monkeypatch, capsys):
+    inputs = iter(["clear","history", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    calculator_repl()
+
+    captured = capsys.readouterr()
+
+    assert "No calculations in history" in captured.out
+
 # def test_display_help(capsys):
 #     """ 
 #     Tests to ensure that the correct help message is displayed.

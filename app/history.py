@@ -94,3 +94,4 @@ class AutoSaveObserver(HistoryObserver):
         if self.calculator.config.auto_save:
             self.calculator.save_history()
             logging.info("History auto-saved")
+

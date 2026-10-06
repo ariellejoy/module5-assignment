@@ -71,3 +71,4 @@ def test_autosave_observer_no_calculation():
     
     with pytest.raises(AttributeError):
         observer.update(None)  # Passing None should raise an exception
+
