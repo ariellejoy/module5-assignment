@@ -1,4 +1,4 @@
-This repo was updated to fulfill the Module 4 assignment. 
+This repo was updated to fulfill the Module 5 assignment. 
 Please note that certain files were copied over from the previous module's assignment to ensure continuity and were not updated as part of the current assignment/objectives (EX: main.py)
 
 REMINDER: in order to use the REPL app: 
