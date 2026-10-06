@@ -2,7 +2,7 @@
 # Calculator Class      #
 ########################
 
-#import sys
+import sys
 #import readline #this will enable history and editing
 #from typing import List
 
