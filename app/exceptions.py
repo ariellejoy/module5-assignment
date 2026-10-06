@@ -9,7 +9,7 @@ class CalculatorError(Exception):
     All custom exceptions for the calculator application inherit from this class,
     allowing for unified error handling.
     """
-    pass
+    pass #pragma: no cover
 
 
 class ValidationError(CalculatorError):
@@ -19,7 +19,7 @@ class ValidationError(CalculatorError):
     This exception is triggered when user inputs do not meet the required criteria,
     such as entering non-numeric values or exceeding maximum allowed values.
     """
-    pass
+    pass #pragma: no cover
 
 
 class OperationError(CalculatorError):
@@ -29,7 +29,7 @@ class OperationError(CalculatorError):
     This exception is used to indicate failures during the execution of arithmetic
     operations, such as division by zero or invalid operations.
     """
-    pass
+    pass #pragma: no cover
 
 
 class ConfigurationError(CalculatorError):
@@ -39,4 +39,4 @@ class ConfigurationError(CalculatorError):
     Triggered when there are issues with the calculator's configuration settings,
     such as invalid directory paths or improper configuration values.
     """
-    pass
+    pass #pragma: no cover

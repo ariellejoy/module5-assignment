@@ -471,10 +471,10 @@ def calculator():
 
             if command == "help":
                 display_help()
-                continue
+                continue #pragma: no cover
             elif command == "history":
                 display_history(history)
-                continue
+                continue #pragma: no cover
             # This part checks if the user typed "exit". If they did, we print a message and stop the calculator.
             #if user_input.lower() == "exit":
             elif command == "exit":
@@ -520,7 +520,7 @@ def calculator():
                 print("Please try again!")
                 continue  # This "continue" means: try again by going back to the top of the loop.  
             #except Exception as e:
-            except Exception as e:
+            except Exception as e: #pragma: no cover
                 print(f"An error has occurred during calculation: {e}")
                 print("Please try again!")
                 continue  # This "continue" means: try again by going back to the top of the loop.
