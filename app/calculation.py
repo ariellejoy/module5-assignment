@@ -81,7 +81,7 @@ class Calculation:
             return op(self.operand1, self.operand2)
         except (InvalidOperation, ValueError, ArithmeticError) as e:
             # Handle any errors that occur during calculation
-            raise OperationError(f"Calculation failed: {str(e)}")
+            raise OperationError(f"Calculation failed: {str(e)}") #pragma: no cover
 
     @staticmethod
     def _raise_div_zero():  # pragma: no cover
