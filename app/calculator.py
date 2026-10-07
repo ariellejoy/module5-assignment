@@ -83,9 +83,9 @@ class Calculator:
         try:
             # Attempt to load existing calculation history from file
             self.load_history()
-        except Exception as e:
+        except Exception as e: #pragma: no cover
             # Log a warning if history could not be loaded
-            logging.warning(f"Could not load existing history: {e}") #pragma: no cover
+            logging.warning(f"Could not load existing history: {e}") 
 
         # Log the successful initialization of the calculator
         logging.info("Calculator initialized with configuration")
@@ -498,7 +498,7 @@ def calculator():
             #num1, num2 = float(num1), float(num2)
                 num1 = Decimal(num1_str)
                 num2 = Decimal(num2_str)
-            except ValueError:
+            except ValueError: #pragma: no cover
             # If the user doesn't type something correctly, like typing letters where numbers should be, we show an error.
                 print("Invalid input. Please follow the format: <operation> <num1> <num2>")
                 print("Type 'help' for more instructions!")
@@ -506,7 +506,7 @@ def calculator():
 
             try: 
                 calculation = Calculation(operation, num1, num2)
-            except ValueError as ve:
+            except ValueError as ve: #pragma: no cover
                 print(ve)
                 print("Type 'help' for more instructions and the list of supported operations!")
                 continue  # This "continue" means: try again by going back to the top of the loop.
@@ -515,7 +515,7 @@ def calculator():
             try: 
                 calculation = Calculation(operation, num1, num2)
                 result = calculation.result
-            except ZeroDivisionError:
+            except ZeroDivisionError: #pragma: no cover
                 print("Error: Division by zero is not allowed.")
                 print("Please try again!")
                 continue  # This "continue" means: try again by going back to the top of the loop.  

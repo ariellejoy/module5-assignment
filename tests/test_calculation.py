@@ -40,11 +40,9 @@ def test_division():
     calc = Calculation(operation="Division", operand1=Decimal("8"), operand2=Decimal("2"))
     assert calc.result == Decimal("4")
 
-
 def test_division_by_zero():
     with pytest.raises(OperationError, match="Division by zero is not allowed"):
         Calculation(operation="Division", operand1=Decimal("8"), operand2=Decimal("0"))
-
 
 def test_power():
     calc = Calculation(operation="Power", operand1=Decimal("2"), operand2=Decimal("3"))
@@ -69,7 +67,6 @@ def test_invalid_root():
 def test_unknown_operation():
     with pytest.raises(OperationError, match="Unknown operation"):
         Calculation(operation="Unknown", operand1=Decimal("5"), operand2=Decimal("3"))
-
 
 def test_to_dict():
     calc = Calculation(operation="Addition", operand1=Decimal("2"), operand2=Decimal("3"))
